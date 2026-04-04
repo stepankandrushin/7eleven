@@ -240,8 +240,44 @@ The address form uses cascading dropdowns. Fields and IDs:
 
 **Success alert**: "การตั้งค่าของคุณเปลี่ยนแปลงสำเร็จ"
 
-### Current Saved Address
+### Favorite Store Page (`/account/favoritestore/`)
 
+- Store number input: `#js-storefinderInput` (type: number)
+- Verify button: `#js-storefinderButton` (text: "ยืนยันรหัสร้าน")
+- After verify, a confirm popup appears with "ยกเลิก" (Cancel) and "ยืนยัน" (Confirm) — click `.btn-confirm.btn-green` to save.
+- On success, redirects to `/account/addresses/`.
+- Error "สาขาที่ท่านเลือกไม่เข้าร่วมรายการ" means the store is not eligible for the delivery program.
+- Error "ปัญหาทางเทคนิค" (technical problem) — retry; may be transient.
+
+### Store Locator API
+
+Find nearby 7-Eleven stores programmatically:
+
+```javascript
+fetch('https://web-api-ro.7eleven.co.th/v1/Store/GetStoreByCurrentLocation', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({latitude: <latitude>, longitude: <longitude>, radius: 50})
+}).then(r => r.json())
+```
+
+**Important**: The payload must use `latitude`/`longitude` (not `lat`/`lng`) — the short form returns empty results.
+
+Response: `{code: 0, msg: "success", data: [{id, code, name, address, lat, lng, products: [...]}]}`
+
+### Stores Near Home
+
+| Code | Name | Services | Eligible |
+|------|------|----------|----------|
+| `<code>` | `<store name>` | Fresh produce, All Cafe, Curated | Yes |
+| `<code>` | `<store name>` | Fresh produce, All Cafe | Yes |
+| `<code>` | `<store name>` | Fresh produce, All Cafe, Curated, ALL Select | No (not in program) |
+
+### Current Saved Data
+
+**Delivery address:**
 ```
 <house no>, <building>, หมู่ <moo>, <sub-district>, <district>, <province>, <postcode>
 ```
+
+**Favorite store:** `<favorite store>`
