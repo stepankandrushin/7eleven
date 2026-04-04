@@ -2,9 +2,11 @@
 
 ## Device & Screen
 
-- **Phone**: Samsung Android, connected via USB/ADB
-- **Screen resolution**: 904 x 2316 pixels
-- **Screen density**: 420 dpi
+- **Phone**: Connected via USB/ADB
+- **Get screen info before each run**:
+  ```bash
+  adb shell wm size && adb shell wm density
+  ```
 
 ## 7-Eleven App
 
