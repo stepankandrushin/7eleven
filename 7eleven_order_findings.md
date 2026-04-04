@@ -67,11 +67,20 @@
 - **Account name**: Your Name
 - **Address saved at**: `/account/settings/` (personal info page)
 
+## Favorite Store
+- **Store**: `<favorite store>`
+- **Address**: `<store address>`
+
+## Home GPS
+- **Latitude**: `<latitude>`
+- **Longitude**: `<longitude>`
+
 ## Session State (as of 2026-04-04)
 - **Account**: Logged in as Your Name
 - **Cart**: 3 cases of Evian 750ml (ready for checkout)
 - **Delivery address**: Saved to account
-- **Next step**: Proceed to checkout and complete order
+- **Favorite store**: `<favorite store>`
+- **Next step**: Select payment and place order
 
 ## Key Selectors That Worked
 - Product search: `input.header-search`

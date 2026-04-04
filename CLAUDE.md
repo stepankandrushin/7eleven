@@ -263,15 +263,84 @@ fetch('https://web-api-ro.7eleven.co.th/v1/Store/GetStoreByCurrentLocation', {
 
 **Important**: The payload must use `latitude`/`longitude` (not `lat`/`lng`) — the short form returns empty results.
 
+**Important**: Must call this API from the `7eleven.co.th` domain (navigate to `https://www.7eleven.co.th/find-store` first). Calling from `allonline.7eleven.co.th` returns 0 results.
+
 Response: `{code: 0, msg: "success", data: [{id, code, name, address, lat, lng, products: [...]}]}`
 
 ### Stores Near Home
 
-| Code | Name | Services | Eligible |
-|------|------|----------|----------|
-| `<code>` | `<store name>` | Fresh produce, All Cafe, Curated | Yes |
-| `<code>` | `<store name>` | Fresh produce, All Cafe | Yes |
-| `<code>` | `<store name>` | Fresh produce, All Cafe, Curated, ALL Select | No (not in program) |
+Based on the home GPS coordinates:
+
+| Code | Name | Distance | Services | Eligible |
+|------|------|----------|----------|----------|
+| **`<code>`** | **`<store name>`** | **`<km>`** | Fresh, Food Place, All Cafe, Curated | **Yes (current)** |
+| `<code>` | `<store name>` | `<km>` | Fresh, All Cafe, Curated, ALL Select | Untested |
+| `<code>` | `<store name>` | `<km>` | Fresh, Food Place, All Cafe, Curated, ALL Select | Untested |
+| `<code>` | `<store name>` | `<km>` | Fresh, Food Place, All Cafe, Curated, ALL Select | Untested |
+| `<code>` | `<store name>` | `<km>` | Fresh, All Cafe, Curated | Yes |
+| `<code>` | `<store name>` | `<km>` | Fresh, All Cafe, Curated, ALL Select | No (not in program) |
+
+### Checkout Flow
+
+#### Step 1: Cart (`/account/basket/`)
+
+- Items listed with "ลบ" (Delete) links — be careful, the confirmation popup may target the wrong item (first in DOM, not the one clicked). Verify cart after removing.
+- "ดำเนินการชำระเงิน" button to proceed.
+- Product search: `/search/?q=evian`
+- Product page: set quantity via `input[type="number"].form-control.text-center`, then click `.btn-addtocart`
+- Max 5 cases per product per day per member.
+
+#### Step 2: Shipping (`/checkout/shipping/`)
+
+**Delivery method tabs** — these are **Bootstrap tabs**, NOT radio buttons:
+
+```javascript
+// Switch to store pickup (default)
+jQuery('a.tab-store[href="#store"]').tab('show');
+
+// Switch to home delivery
+jQuery('a.tab-address[href="#address"]').tab('show');
+```
+
+**Store pickup tab (`#store`):**
+- Free shipping
+- Select store via radio: `#s-recent-{storeCode}` (e.g. `#s-recent-01234`)
+- Phone field: `#second-phone-shipping` (pre-filled with the account phone)
+
+**Home delivery tab (`#address`):**
+- Same address form as account settings (same field IDs)
+- **MUST set GPS coordinates** — without them, shipping cost is extremely high (฿700-1100+)
+- GPS fields (hidden inputs, set via JS):
+  - `#new-address-mapLocation-latitude` → `<latitude>`
+  - `#new-address-mapLocation-longitude` → `<longitude>`
+  - `#new-address-mapLocation-zipCode` → `<postcode>`
+  - Also set `#userAddressBook0mapLocationLatitude`, `#userAddressBook0mapLocationLongitude`, `#userAddressBook0mapLocationZipCode`
+- "กรุณาระบุตำแหน่ง" warning means GPS not set — shipping will be wrong
+- Submit: `.btn-submit-shipping`
+
+#### Step 3: Payment (`/checkout/payment/`)
+
+**Available payment methods (website only):**
+1. Credit/Debit card
+2. TrueMoney Wallet
+3. **ชำระเงินสด ที่ร้านเซเว่นอีเลฟเว่น (7-11)** — pay cash via barcode at any branch
+4. QR Payment
+
+**NO cash on delivery (ชำระเงินปลายทาง)** — COD is only available in the 7-Eleven mobile app, not the website.
+
+For store pickup, option 3 is effectively COD: pick up at store, show barcode, pay cash.
+
+Select payment: click `button.payment-option-trigger.COUNTERSERVICE_CASH-tab` for cash at 7-11.
+
+Submit order: click "สั่งซื้อ" button.
+
+### Home GPS Coordinates
+
+```
+Latitude:  <latitude>
+Longitude: <longitude>
+```
+Source: Google Maps
 
 ### Current Saved Data
 
@@ -281,3 +350,7 @@ Response: `{code: 0, msg: "success", data: [{id, code, name, address, lat, lng, 
 ```
 
 **Favorite store:** `<favorite store>`
+
+**Phone:** 0XXXXXXXXX
+
+**Account name:** Your Name
