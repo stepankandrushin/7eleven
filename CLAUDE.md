@@ -142,5 +142,13 @@ await send_cmd("Target.createTarget", {"url": "https://example.com"})
 ### Dependencies
 
 ```bash
-uv pip install websockets
+uv pip install websockets  # Already installed
 ```
+
+**Tip**: Work step by step interactively. Verify each action works before proceeding to the next step.
+
+---
+
+## 7-Eleven Thailand
+
+See [7eleven_order_findings.md](./7eleven_order_findings.md) for details.
