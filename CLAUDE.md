@@ -149,6 +149,99 @@ uv pip install websockets  # Already installed
 
 ---
 
+## Email (IMAP)
+
+The user's email is `your@email.com`, accessed via IMAP (not Gmail). Credentials and connection details are in `.env` (see `.env.sample` for the format).
+
+### Usage
+
+```bash
+python3 check_email.py       # latest 5 emails
+python3 check_email.py 10    # latest 10 emails
+```
+
+---
+
 ## 7-Eleven Thailand
 
 See [7eleven_order_findings.md](./7eleven_order_findings.md) for details.
+
+### Login Flow (OTP-based, no password login)
+
+The 7-Eleven ALL Online site uses **email OTP authentication** (not password). The login flow is:
+
+1. Navigate to `https://www.allonline.7eleven.co.th/account/login/`
+2. This redirects to `https://allmember-web-ext.cpall.co.th/weblogin/login/email-otp`
+3. An OTP is sent to `your@email.com` automatically
+4. The page shows 6 individual `<input type="text">` fields for the OTP digits
+5. Retrieve the OTP from email (sender: `noreply@7eleven.co.th`, subject contains "แจ้งรหัสเพื่อยืนยัน")
+6. Enter OTP digits into the 6 fields using native value setter + input/change events:
+
+```javascript
+const inputs = document.querySelectorAll('input[type="text"]');
+const otp = '123456';
+for (let i = 0; i < 6; i++) {
+    const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set;
+    setter.call(inputs[i], otp[i]);
+    inputs[i].dispatchEvent(new Event('input', { bubbles: true }));
+    inputs[i].dispatchEvent(new Event('change', { bubbles: true }));
+}
+```
+
+7. **IMPORTANT: ALL member registration popup** — After OTP verification, the site redirects to `allmember-web-ext.cpall.co.th/weblogin/allmember/register/step1` showing an ALL member registration page. **Click "ข้าม" (Skip) to bypass registration** and proceed to the main site:
+
+```javascript
+const btns = Array.from(document.querySelectorAll('button, a'));
+const skipBtn = btns.find(b => b.textContent.trim() === 'ข้าม');
+if (skipBtn) skipBtn.click();
+```
+
+8. After skipping, you land on the main site logged in as **Your Name** at `allonline.7eleven.co.th/?status=success`
+
+### Key Notes for Login
+
+- The `/json/new?url=...` HTTP API returns 405 — **do NOT use it** to open new tabs. Instead, use an existing tab and `Page.navigate()`.
+- The site uses **jQuery** — use `jQuery('#selector').val(value).trigger('change')` for dropdowns (province/district/sub-district cascade).
+- Native `dispatchEvent(new Event('change'))` does NOT trigger the district/sub-district cascade. You must use jQuery `.trigger('change')`.
+- OTP ref code shown on page (e.g. "REF. WENYMI") matches the ref in the email for verification.
+- OTP expires in 5 minutes.
+
+### Account Pages
+
+| Page | URL |
+|------|-----|
+| Account home | `/account/` |
+| Personal settings | `/account/settings/` |
+| Addresses (delivery) | `/account/addresses/` |
+| Favorite 7-Eleven store | `/account/favoritestore/` |
+| Order history | `/account/order-history/` |
+| Cart/basket | `/account/basket/` |
+| Wishlist | `/account/wishlist/` |
+
+### Address Form (at `/account/settings/`)
+
+The address form uses cascading dropdowns. Fields and IDs:
+
+| Field | ID | Example |
+|-------|----|---------|
+| House number | `new-address-addrno` | `<house no>` |
+| Building/Floor | `new-address-floor` | `<building>` |
+| Moo | `new-address-moo` | `<moo>` |
+| Soi | `new-address-soi` | |
+| Street | `new-address-street` | |
+| Province | `new-address-province` | `<province>` |
+| District | `new-address-district` | `<district>` |
+| Sub-district | `new-address-sub-district` | `<sub-district>` |
+| Postal code | `new-address-postal-code` | `<postcode>` (auto-fills) |
+
+**Cascade order**: Set province → wait 3s → set district → wait 3s → set sub-district → postal code auto-fills.
+
+**Submit button**: `#changePersonalData` (text: "ยืนยัน")
+
+**Success alert**: "การตั้งค่าของคุณเปลี่ยนแปลงสำเร็จ"
+
+### Current Saved Address
+
+```
+<house no>, <building>, หมู่ <moo>, <sub-district>, <district>, <province>, <postcode>
+```

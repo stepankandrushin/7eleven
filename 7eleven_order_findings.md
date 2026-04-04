@@ -17,9 +17,14 @@
 - **Delivery**: To be selected at checkout
 
 ## Login Credentials
-- **Email**: your@email.com
-- **Password**: `<removed>`
-- **Note**: Login required before checkout; uses 7-Eleven/7App membership account
+- **Email**: your@email.com (credentials in `.env` as `SEVEN_EMAIL` / `SEVEN_PASSWORD`)
+- **Login method**: Email OTP (6-digit code sent to your@email.com)
+- **OTP sender**: noreply@7eleven.co.th
+- **Note**: Login redirects to `allmember-web-ext.cpall.co.th` for OTP. After OTP, click "ข้าม" (Skip) on ALL member registration page.
+
+## Email for OTP Retrieval
+- **Email**: your@email.com (credentials in `.env` as `EMAIL_*` vars)
+- **Script**: `check_email.py` — run `python3 check_email.py` to get latest emails
 
 ## Checkout Flow
 1. Add product to cart (button: "เพิ่มลงตะกร้า")
@@ -55,11 +60,18 @@
 - Estimated delivery: 2-5 business days after payment
 - 1L Evian not available; 750ml 12-bottle case is closest option
 
-## Session State (as of today)
+## Saved Delivery Address
+```
+<house no>, <building>, หมู่ <moo>, <sub-district>, <district>, <province>, <postcode>
+```
+- **Account name**: Your Name
+- **Address saved at**: `/account/settings/` (personal info page)
+
+## Session State (as of 2026-04-04)
+- **Account**: Logged in as Your Name
 - **Cart**: 3 cases of Evian 750ml (ready for checkout)
-- **Location**: On checkout page at `/checkout/shipping/`
-- **Status**: Logged in, need to select delivery address and complete
-- **Next step**: Fill in delivery address and select "ชำระเงินปลายทาง" (Pay on delivery)
+- **Delivery address**: Saved to account
+- **Next step**: Proceed to checkout and complete order
 
 ## Key Selectors That Worked
 - Product search: `input.header-search`
