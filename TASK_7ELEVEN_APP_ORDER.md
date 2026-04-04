@@ -1,54 +1,75 @@
-# Task: Order Evian Water via 7-Eleven App (Android)
+# Task: Order Evian Water via 7-Eleven App (Android/ADB)
 
 ## Goal
-Order 3 cases (36 bottles) of Evian 750ml water through the **7-Eleven mobile app** on a Samsung Android phone, delivered to home address with **cash on delivery (ชำระเงินปลายทาง / เก็บเงินปลายทาง)**.
+Order 3 cases (36 bottles) of Evian water through the **7-Eleven TH mobile app** on a Samsung Android phone connected via ADB, delivered to home address with **cash on delivery (เก็บเงินปลายทาง)**.
 
-If Evian 1L is available in the app, order that instead (3 cases / 36 bottles).
+Prefer Evian 1L if available. Fallback: Evian 750ml Sport Cap, case of 12 (product code 420672010, ~895 THB/case).
 
-## Device
-- Samsung Android phone connected via USB/ADB
-- 7-Eleven app (7App) installed
+## Before You Start
+
+1. **Read CLAUDE.md** — it has all ADB automation instructions, UI Automator usage, popup handling, etc.
+2. **Check ADB connection**: `adb devices` (must show "device", not "unauthorized")
+3. **Get screen resolution**: `adb shell wm size && adb shell wm density`
+
+## App Details
+
+- **Package**: `asuk.com.android.app`
+- **Launch**: `adb shell monkey -p asuk.com.android.app -c android.intent.category.LAUNCHER 1`
+- **Force stop**: `adb shell am force-stop asuk.com.android.app`
+
+## Critical Rules
+
+1. **NEVER guess tap coordinates from screenshots.** Always use UI Automator dump to get exact bounds, then tap center. See CLAUDE.md for details.
+2. **Campaign popups appear frequently** — detect with `wc -c` on UI dump (~2845 bytes = popup). Dismiss with `adb shell input keyevent 4` (back button).
+3. **Always verify state** after each action: dump UI or take screenshot.
 
 ## Account
+
 - Email: your@email.com
-- Login uses OTP sent to email — check OTP via `python3 check_email.py 1` (IMAP script in this repo)
+- Login uses OTP sent to email — retrieve with `python3 check_email.py 1`
 - OTP sender: noreply@7eleven.co.th
 - Account name: Your Name
+- Phone: 0XXXXXXXXX
 
 ## Delivery Address
+
 ```
 <house no>, <building>, หมู่ <moo>, <sub-district>, <district>, <province>, <postcode>
 ```
 GPS: `<latitude>, <longitude>`
 
 ## Nearest Store
-- `<favorite store>` (currently saved as favorite)
-- Address: `<store address>`
 
-## Phone
-0XXXXXXXXX
+- `<favorite store>` (saved as favorite)
 
 ## Payment
-**Cash on delivery (เก็บเงินปลายทาง)** — this option is available in the app but NOT on the website.
 
-## Product Details
-- **Preferred**: Evian 1L (เอเวียง 1 ลิตร) — may not be available
-- **Fallback**: Evian 750ml Sport Cap, case of 12 (เอเวียง น้ำแร่ธรรมชาติ 750 มล. จุกสปอร์ต ยกลัง 12 ขวด) — product code 420672010, ฿895/case
-- **Quantity**: 3 cases = 36 bottles
-- Max 5 cases per product per day per member
+**Cash on delivery (เก็บเงินปลายทาง)** — this is only available in the app, not the website.
 
 ## Steps
-1. Connect to Samsung phone via ADB
-2. Open 7-Eleven app
-3. Log in (if not already) — email OTP flow, retrieve OTP from email using `check_email.py`
-4. Search for "Evian" or "เอเวียง"
-5. Check if 1L is available → if yes, order 3 cases; if no, order 3 cases of 750ml
-6. Set delivery address (should be saved already) with GPS coordinates
-7. Select **cash on delivery** payment
-8. Confirm and place order
-9. Report order number and expected delivery date
+
+1. Launch 7-Eleven app
+2. Dismiss any campaign popups (back button)
+3. From app home, tap **"7 Delivery"** / "สั่งเลย" to enter delivery section
+4. Dismiss any more popups
+5. Search for "evian" or "เอเวียง"
+   - Previous attempt: searching "evian" in 7 Delivery returned empty. Try "เอเวียง" (Thai name), or browse water categories, or try **ALL ONLINE** section instead
+6. Check if 1L is available — if yes, order 3 cases; if no, order 3 cases of 750ml
+7. Set delivery address (should be saved already) with GPS coordinates
+8. Select **cash on delivery** payment
+9. Confirm and place order
+10. Report order number and expected delivery date
+
+## Known Issues from Previous Attempt
+
+- Searching "evian" in 7 Delivery returned **no results**. The product may only be available in the **ALL ONLINE** section of the app, or it may need to be searched in Thai ("เอเวียง"). Try both sections.
+- The app shows campaign popups constantly — on launch, when entering sections, after dismissing one another may appear. Always check UI dump size before interacting.
+- The 7 Delivery activity (`SevenNowLandingActivity`) cannot be launched directly via `am start` (not exported). Must navigate through the app home.
+- First time entering 7 Delivery triggers a **location permission** dialog — grant "While using the app" with precise location.
+- If COD is not available in ALL ONLINE, go back to 7 Delivery and try browsing categories instead of search.
 
 ## Context
-- The ALL Online website does NOT support cash on delivery — that's why we're using the app
-- Shipping for home delivery should be cheaper 100 THB or free
-- The app (7Delivery) uses local store delivery with COD support
+
+- The ALL Online **website** does NOT support cash on delivery — that's why we use the app
+- Shipping should be ~100 THB or free for home delivery
+- Max 5 cases per product per day per member
