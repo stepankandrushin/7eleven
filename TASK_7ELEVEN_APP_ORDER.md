@@ -60,9 +60,11 @@ GPS: `<latitude>, <longitude>`
 9. Confirm and place order
 10. Report order number and expected delivery date
 
-## Known Issues from Previous Attempt
+## Known Issues & Learnings
 
-- Searching "evian" in 7 Delivery returned **no results**. The product may only be available in the **ALL ONLINE** section of the app, or it may need to be searched in Thai ("เอเวียง"). Try both sections.
+- ~~Searching "evian" in 7 Delivery returned **no results**~~ **RESOLVED**: Typing "evian" shows autocomplete suggestions including "เอเวียง". Tap the suggestion (not Enter) to search. Evian IS available in 7 Delivery.
+- **Evian products available in 7 Delivery** (as of 2026-04): Evian 1L (~65 Baht), Evian 500ml (~48 Baht), Evian 500ml case (1,080 Baht, Coming Soon), Evian Sparkling 330ml 4-pack (210 Baht, Coming Soon)
+- **Stock limit**: Evian 1L had max 19 units available (store inventory based). The +/- quantity selector silently caps at available stock.
 - The app shows campaign popups constantly — on launch, when entering sections, after dismissing one another may appear. Always check UI dump size before interacting.
 - The 7 Delivery activity (`SevenNowLandingActivity`) cannot be launched directly via `am start` (not exported). Must navigate through the app home.
 - First time entering 7 Delivery triggers a **location permission** dialog — grant "While using the app" with precise location.

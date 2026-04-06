@@ -92,6 +92,17 @@ grep "cancelButton" /tmp/ui.xml  # find bounds
 
 **Method 3**: If back button also dismisses the page, find the `cancelButton` bounds from the UI dump and tap the center of those bounds.
 
+### Post-order popups (back button does NOT work)
+
+After placing an order, a promotion popup appears over the order tracking page. Unlike other popups, **the back button does not dismiss it**. You must find and tap the `closeButton`:
+
+```bash
+grep "closeButton" /tmp/ui.xml | grep -o 'bounds="[^"]*"'
+# Then tap the center of those bounds
+```
+
+This popup also has `resource-id="asuk.com.android.app:id/goToLinkButton"` (ช้อปเลย / Shop now) — do not tap that.
+
 ### Popup loop
 
 After dismissing a popup, the app may show another one. Always re-check with `uiautomator dump` + `wc -c` before proceeding.
@@ -157,6 +168,74 @@ python3 check_email.py 10    # latest 10 emails
 ```
 
 OTP sender: `noreply@7eleven.co.th`, subject contains "แจ้งรหัสเพื่อยืนยัน"
+
+## 7 Delivery Search Bar — How to Use
+
+The search bar inside 7 Delivery has specific coordinates and behavior:
+
+1. **Find the search bar by resource-id** `sevennow_productSearch_editText`, or by its placeholder text (which changes with promotions):
+   ```bash
+   grep -o 'resource-id="[^"]*"\|text="[^"]*"\|bounds="[^"]*"' /tmp/ui.xml | paste - - - | grep "productSearch_editText"
+   ```
+2. **Tap the search bar bounds** → opens the search screen (`sevennow_searchRootLayout`) with an auto-focused EditText
+3. **Type your query** with `adb shell input text "query"` — do NOT press Enter/keyevent 66 (it doesn't submit the search in this field)
+4. **Search suggestions appear below** but are **NOT captured by UI Automator** — this is a known exception to the "never guess coordinates" rule
+5. **To select a suggestion**, tap by estimated position. On a 904x2316 screen, suggestions start around y~350 below the search bar with ~70px spacing between items. Always verify the result with a screenshot after tapping.
+
+## Idle State Errors with UI Automator
+
+The 7 Delivery landing page has a **banner carousel** that continuously animates, causing `ERROR: could not get idle state` on every UI dump attempt.
+
+### Solution
+
+Use a **tiny no-op swipe** to interrupt the animation without triggering any tap targets, then dump:
+
+```bash
+# No-op swipe to stop carousel animation, then dump
+adb shell input swipe 452 1000 452 999 50 && sleep 1 && adb shell uiautomator dump /sdcard/ui.xml && adb pull /sdcard/ui.xml /tmp/ui.xml
+```
+
+Alternatively, **tap the search bar** — this both stops animation and opens the search screen (often what you want anyway). But avoid tapping banners or category cards, as they navigate away from the landing page.
+
+## Launching the App — Always Verify Focus
+
+After launching with `monkey`, the app may occasionally land on the **Play Store page** instead of the app itself. **Always check `mCurrentFocus`** after launch:
+
+```bash
+adb shell monkey -p asuk.com.android.app -c android.intent.category.LAUNCHER 1
+sleep 5
+adb shell dumpsys window | grep mCurrentFocus
+```
+
+- If it shows a Play Store activity → find the "Open" button in UI dump and tap it
+- Expected: `MainActivity` for app home, `SevenNowLandingActivity` for 7 Delivery
+
+## Checkout Flow (7 Delivery)
+
+### Order Flow Steps
+
+1. **Product page**: Set quantity with +/- buttons, tap "Add to basket X.XX Baht"
+2. **Search results**: Bottom bar shows basket count and "View basket" button → tap it
+3. **Basket page**: Shows items, subtotal, total → tap "Next"
+4. **Order summary**: Delivery address, customer info, product list, coupons, payment options → tap "Next"
+5. **Confirmation page**: Shows net price, delivery fee, discounts → tap "Place order"
+6. **Processing**: "Please wait a moment... Sending orders to the store" (wait ~10 seconds)
+7. **Order tracking**: Map view with order status (Awaiting order → Preparing → On delivery → Delivered)
+
+### Payment Options (in Order Summary)
+
+Scroll down to see all payment options. The page is long — may need 2 swipes to see everything:
+
+- **Pay now**: TrueMoney Wallet
+- **Pay on Delivery**:
+  - **Cash** — Cash on delivery (เก็บเงินปลายทาง)
+  - **TrueMoney Wallet** — Pay by TrueMoney Wallet on delivery
+
+To select Cash on Delivery: find "Cash" text in UI dump and tap its bounds.
+
+### Product Quantity Limits
+
+The +/- quantity selector has a **stock-based maximum**. The app silently caps at available inventory. Check the product page text "Available units might vary upon the remaining stock" and verify final quantity in the basket.
 
 ## Web Ordering Reference
 
