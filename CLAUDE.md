@@ -3,10 +3,6 @@
 ## Device & Screen
 
 - **Phone**: Connected via USB/ADB
-- **Get screen info before each run**:
-  ```bash
-  adb shell wm size && adb shell wm density
-  ```
 
 ## 7-Eleven App
 
@@ -32,7 +28,7 @@
 Four scripts in the project directory handle coordinate finding and screen inspection:
 
 1. **`grid.py`** — Overlays a labeled 64px grid on `screen.png`, saves as `screen_grid.png`. Columns labeled A–N at the bottom, rows 1–36 on the left.
-2. **`find_element.py "<question>"`** — Automated: takes a screenshot, generates the grid, sends it to a vision model (Gemma 4 31B), and returns the cell + pixel coordinates.
+2. **`find_element.py "<question>"`** — Automated: takes a screenshot, generates the grid, sends it to the vision model, and returns the cell + pixel coordinates.
 3. **`cell2coords.py <cell>`** — Converts a cell reference (e.g. `D12`) to center pixel `(x, y)` on the original 904x2316 screen.
 4. **`phone_status.py [optional prompt]`** — Takes a screenshot (no grid) and sends it to the vision model for a detailed description of the current screen state. Use this for verifying what's on screen before/after actions. Supports an optional extra prompt for specific questions.
 
@@ -44,6 +40,10 @@ python3 phone_status.py
 python3 phone_status.py "Is there a popup showing?"
 python3 phone_status.py "What is the quantity displayed?"
 ```
+
+### Wide elements (search bars, full-width buttons)
+
+The vision model tends to return cells at the **left edge** of wide UI elements. For these, always ask for "center" in the prompt: `"What cell is the center of the Add to basket button?"`
 
 ### Quick method (automated — preferred)
 
@@ -74,14 +74,6 @@ python3 cell2coords.py D12
 # 5. Tap
 adb shell input tap 224 736
 ```
-
-### Vision model config
-
-- **Model**: `gemma-4-31B-it-uncensored-heretic-Q8_0.gguf`
-- **API**: `http://localhost:8020/v1` (OpenAI-compatible)
-- **No-thinking mode**: enabled via `chat_template_kwargs: {"enable_thinking": false}`
-- **Image token budget**: `1120` (max quality for OCR/UI reading)
-- **Temperature**: `0.1` (deterministic)
 
 ## Campaign Popups
 
@@ -218,7 +210,7 @@ OTP sender: `noreply@7eleven.co.th`, subject contains "แจ้งรหัส�
 
 ## 7 Delivery Search Bar — How to Use
 
-1. Use `python3 find_element.py "What cell is the search bar?"` to find and tap the search bar
+1. Use `python3 find_element.py "What cell is the center of the search bar?"` to find and tap the search bar (asking for "center" avoids the model returning a cell at the left edge, which may not activate the field)
 2. **Type your query** with `adb shell input text "query"` — do NOT press Enter/keyevent 66 (it doesn't submit the search in this field)
 3. **Search suggestions appear below** — use `python3 find_element.py "What cell is the first search suggestion?"` to find and tap suggestions. Always verify the result with a screenshot after tapping.
 

@@ -35,7 +35,8 @@ if extra_prompt:
     user_text += f"\n\nAlso: {extra_prompt}"
 
 response = client.chat.completions.create(
-    model="gemma-4-31B-it-uncensored-heretic-Q8_0.gguf",
+    # model="gemma-4-31B-it-uncensored-heretic-Q8_0.gguf",
+    model="gemma-4-26B-A4B-it-uncensored-heretic-Q8_0.gguf",
     messages=[
         {"role": "system", "content": system_prompt},
         {
