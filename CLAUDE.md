@@ -23,43 +23,55 @@
 3. First launch asks for **location permission** — grant "While using the app" (use precise location)
 4. Inside 7 Delivery: search bar at top, "Delivery" / "Pick-up" tabs, banners, categories
 
-## ADB Tap Coordinates — CRITICAL
+## ADB Tap Coordinates — Grid Vision Method
 
-**Screenshots are scaled down when displayed.** The actual screen is 904x2316, but the screenshot image appears smaller. **NEVER estimate coordinates from the visual screenshot.** Always use one of these methods:
+**NEVER estimate coordinates from screenshots visually.** Use the grid-based vision method to get accurate click coordinates.
 
-### Method 1: UI Automator (preferred)
+### How it works
 
-```bash
-adb shell uiautomator dump /sdcard/ui.xml && adb pull /sdcard/ui.xml /tmp/ui.xml
-```
+Three scripts in the project directory handle coordinate finding:
 
-Then parse the XML to find the element's `bounds="[left,top][right,bottom]"` and tap the center:
+1. **`grid.py`** — Overlays a labeled 64px grid on `screen.png`, saves as `screen_grid.png`. Columns labeled A–N at the bottom, rows 1–36 on the left.
+2. **`test_grid_agent.py "<question>"`** — Automated: takes a screenshot, generates the grid, sends it to a vision model (Gemma 4 31B), and returns the cell + pixel coordinates.
+3. **`cell2coords.py <cell>`** — Converts a cell reference (e.g. `D12`) to center pixel `(x, y)` on the original 904x2316 screen.
 
-```bash
-# For bounds [624,698][716,751]:
-# center_x = (624+716)/2 = 670, center_y = (698+751)/2 = 725
-adb shell input tap 670 725
-```
-
-**Common issues with UI Automator:**
-- `ERROR: could not get idle state` — the UI is still animating/loading. Wait a few seconds and retry.
-- Very small XML output (~2845 bytes) — usually means a **popup overlay** is blocking the real UI. Dismiss the popup first.
-
-### Method 2: Extract text and bounds together
+### Quick method (automated — preferred)
 
 ```bash
-grep -o 'text="[^"]*"\|content-desc="[^"]*"\|bounds="[^"]*"' /tmp/ui.xml | paste - - - | grep -i "keyword"
+# 1. Ask the vision model (takes screenshot automatically)
+python3 test_grid_agent.py "What cell is the 7 Delivery button?"
+# Output: Cell F5 -> click at (352, 288)
+
+# 2. Tap the coordinates
+adb shell input tap 352 288
 ```
 
-This finds elements by text content and gives their exact bounds for tapping.
+### Manual method
 
-### Why clicks miss
+```bash
+# 1. Take screenshot
+adb shell screencap -p /sdcard/screen.png && adb pull /sdcard/screen.png screen.png
 
-1. **Screenshot scaling**: The screenshot PNG is 904x2316 pixels but when viewed, your visual estimate of "where" something is gets scaled. A button that looks like it's at (200, 250) in the image viewer might actually be at (600, 750) in real screen coordinates.
-2. **Popups/overlays**: Invisible campaign popups intercept all taps even when they appear transparent. The UI automator dump will show only the popup elements (small XML ~2845 bytes) instead of the real page.
-3. **Wrong coordinate space**: Always use the actual 904x2316 coordinate space, not a scaled-down version.
+# 2. Generate grid overlay
+python3 grid.py screen.png
 
-**Rule: ALWAYS dump UI Automator XML and read the `bounds` attribute before tapping. Never guess coordinates from screenshots.**
+# 3. View screen_grid.png to identify the cell visually
+
+# 4. Get coordinates
+python3 cell2coords.py D12
+# Output: (224, 736)
+
+# 5. Tap
+adb shell input tap 224 736
+```
+
+### Vision model config
+
+- **Model**: `gemma-4-31B-it-uncensored-heretic-Q8_0.gguf`
+- **API**: `http://localhost:8020/v1` (OpenAI-compatible)
+- **No-thinking mode**: enabled via `chat_template_kwargs: {"enable_thinking": false}`
+- **Image token budget**: `1120` (max quality for OCR/UI reading)
+- **Temperature**: `0.1` (deterministic)
 
 ## Campaign Popups
 
@@ -120,17 +132,14 @@ sleep 5
 adb shell input keyevent 4
 sleep 2
 
-# 4. Dump UI and find elements
-adb shell uiautomator dump /sdcard/ui.xml && adb pull /sdcard/ui.xml /tmp/ui.xml
+# 4. Find element and get coordinates (takes screenshot automatically)
+python3 test_grid_agent.py "What cell is the 7 Delivery button?"
 
-# 5. Find element by text
-grep -o 'text="[^"]*"\|bounds="[^"]*"' /tmp/ui.xml | paste - - | grep "7 Delivery"
+# 5. Tap the returned coordinates
+adb shell input tap <x> <y>
 
-# 6. Tap center of bounds
-adb shell input tap <center_x> <center_y>
-
-# 7. Take screenshot to verify
-adb shell screencap -p /sdcard/screen.png && adb pull /sdcard/screen.png /tmp/screen.png
+# 6. Verify with another screenshot
+python3 test_grid_agent.py "What screen am I on?"
 ```
 
 ## Other ADB Commands
@@ -171,31 +180,9 @@ OTP sender: `noreply@7eleven.co.th`, subject contains "แจ้งรหัส�
 
 ## 7 Delivery Search Bar — How to Use
 
-The search bar inside 7 Delivery has specific coordinates and behavior:
-
-1. **Find the search bar by resource-id** `sevennow_productSearch_editText`, or by its placeholder text (which changes with promotions):
-   ```bash
-   grep -o 'resource-id="[^"]*"\|text="[^"]*"\|bounds="[^"]*"' /tmp/ui.xml | paste - - - | grep "productSearch_editText"
-   ```
-2. **Tap the search bar bounds** → opens the search screen (`sevennow_searchRootLayout`) with an auto-focused EditText
-3. **Type your query** with `adb shell input text "query"` — do NOT press Enter/keyevent 66 (it doesn't submit the search in this field)
-4. **Search suggestions appear below** but are **NOT captured by UI Automator** — this is a known exception to the "never guess coordinates" rule
-5. **To select a suggestion**, tap by estimated position. On a 904x2316 screen, suggestions start around y~350 below the search bar with ~70px spacing between items. Always verify the result with a screenshot after tapping.
-
-## Idle State Errors with UI Automator
-
-The 7 Delivery landing page has a **banner carousel** that continuously animates, causing `ERROR: could not get idle state` on every UI dump attempt.
-
-### Solution
-
-Use a **tiny no-op swipe** to interrupt the animation without triggering any tap targets, then dump:
-
-```bash
-# No-op swipe to stop carousel animation, then dump
-adb shell input swipe 452 1000 452 999 50 && sleep 1 && adb shell uiautomator dump /sdcard/ui.xml && adb pull /sdcard/ui.xml /tmp/ui.xml
-```
-
-Alternatively, **tap the search bar** — this both stops animation and opens the search screen (often what you want anyway). But avoid tapping banners or category cards, as they navigate away from the landing page.
+1. Use `python3 test_grid_agent.py "What cell is the search bar?"` to find and tap the search bar
+2. **Type your query** with `adb shell input text "query"` — do NOT press Enter/keyevent 66 (it doesn't submit the search in this field)
+3. **Search suggestions appear below** — use `python3 test_grid_agent.py "What cell is the first search suggestion?"` to find and tap suggestions. Always verify the result with a screenshot after tapping.
 
 ## Launching the App — Always Verify Focus
 
@@ -207,7 +194,7 @@ sleep 5
 adb shell dumpsys window | grep mCurrentFocus
 ```
 
-- If it shows a Play Store activity → find the "Open" button in UI dump and tap it
+- If it shows a Play Store activity → use `python3 test_grid_agent.py "What cell is the Open button?"` to find and tap it
 - Expected: `MainActivity` for app home, `SevenNowLandingActivity` for 7 Delivery
 
 ## Checkout Flow (7 Delivery)
@@ -231,7 +218,7 @@ Scroll down to see all payment options. The page is long — may need 2 swipes t
   - **Cash** — Cash on delivery (เก็บเงินปลายทาง)
   - **TrueMoney Wallet** — Pay by TrueMoney Wallet on delivery
 
-To select Cash on Delivery: find "Cash" text in UI dump and tap its bounds.
+To select Cash on Delivery: use `python3 test_grid_agent.py "What cell is the Cash payment option?"`.
 
 ### Product Quantity Limits
 
