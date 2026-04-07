@@ -237,6 +237,11 @@ adb shell dumpsys window | grep mCurrentFocus
 
 ## Checkout Flow (7 Delivery)
 
+### Product Quantity & Packaging
+- **Verify Packaging**: Before adjusting quantity (+/-), always check if the product is a single item or a pack/case.
+- **Read Labels Carefully**: Look for keywords like "Pack", "Case", "ลัง" (Case), or "แพ็ก" (Pack) in the product title and image.
+- **Calculate Total**: Ensure the `(Quantity selected) * (Items per pack)` equals the requested amount before adding to the basket.
+
 ### Order Flow Steps
 
 1. **Product page**: Set quantity with +/- buttons, tap "Add to basket X.XX Baht"
