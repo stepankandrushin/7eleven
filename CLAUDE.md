@@ -32,7 +32,7 @@
 Four scripts in the project directory handle coordinate finding and screen inspection:
 
 1. **`grid.py`** — Overlays a labeled 64px grid on `screen.png`, saves as `screen_grid.png`. Columns labeled A–N at the bottom, rows 1–36 on the left.
-2. **`test_grid_agent.py "<question>"`** — Automated: takes a screenshot, generates the grid, sends it to a vision model (Gemma 4 31B), and returns the cell + pixel coordinates.
+2. **`find_element.py "<question>"`** — Automated: takes a screenshot, generates the grid, sends it to a vision model (Gemma 4 31B), and returns the cell + pixel coordinates.
 3. **`cell2coords.py <cell>`** — Converts a cell reference (e.g. `D12`) to center pixel `(x, y)` on the original 904x2316 screen.
 4. **`phone_status.py [optional prompt]`** — Takes a screenshot (no grid) and sends it to the vision model for a detailed description of the current screen state. Use this for verifying what's on screen before/after actions. Supports an optional extra prompt for specific questions.
 
@@ -49,7 +49,7 @@ python3 phone_status.py "What is the quantity displayed?"
 
 ```bash
 # 1. Ask the vision model (takes screenshot automatically)
-python3 test_grid_agent.py "What cell is the 7 Delivery button?"
+python3 find_element.py "What cell is the 7 Delivery button?"
 # Output: Cell F5 -> click at (352, 288)
 
 # 2. Tap the coordinates
@@ -163,7 +163,7 @@ sleep 2
 python3 phone_status.py  # verify popup is gone
 
 # 4. Find element and get coordinates
-python3 test_grid_agent.py "What cell is the 7 Delivery button?"
+python3 find_element.py "What cell is the 7 Delivery button?"
 
 # 5. ACT: Tap the returned coordinates
 adb shell input tap <x> <y>
@@ -178,7 +178,7 @@ python3 phone_status.py "Am I on the 7 Delivery page?"
 - **Never chain multiple taps without verifying each one.** Each action gets its own verify step.
 - **Quantity changes**: Always verify the displayed number after each +/- tap. The app may silently cap at stock limits.
 - **Page transitions**: After tapping a navigation button, verify you landed on the expected page before proceeding.
-- **Use `phone_status.py`** for verification (detailed description), **`test_grid_agent.py`** for finding coordinates to tap.
+- **Use `phone_status.py`** for verification (detailed description), **`find_element.py`** for finding coordinates to tap.
 
 ## Other ADB Commands
 
@@ -218,9 +218,9 @@ OTP sender: `noreply@7eleven.co.th`, subject contains "แจ้งรหัส�
 
 ## 7 Delivery Search Bar — How to Use
 
-1. Use `python3 test_grid_agent.py "What cell is the search bar?"` to find and tap the search bar
+1. Use `python3 find_element.py "What cell is the search bar?"` to find and tap the search bar
 2. **Type your query** with `adb shell input text "query"` — do NOT press Enter/keyevent 66 (it doesn't submit the search in this field)
-3. **Search suggestions appear below** — use `python3 test_grid_agent.py "What cell is the first search suggestion?"` to find and tap suggestions. Always verify the result with a screenshot after tapping.
+3. **Search suggestions appear below** — use `python3 find_element.py "What cell is the first search suggestion?"` to find and tap suggestions. Always verify the result with a screenshot after tapping.
 
 ## Launching the App — Always Verify Focus
 
@@ -232,7 +232,7 @@ sleep 5
 adb shell dumpsys window | grep mCurrentFocus
 ```
 
-- If it shows a Play Store activity → use `python3 test_grid_agent.py "What cell is the Open button?"` to find and tap it
+- If it shows a Play Store activity → use `python3 find_element.py "What cell is the Open button?"` to find and tap it
 - Expected: `MainActivity` for app home, `SevenNowLandingActivity` for 7 Delivery
 
 ## Checkout Flow (7 Delivery)
@@ -261,7 +261,7 @@ Scroll down to see all payment options. The page is long — may need 2 swipes t
   - **Cash** — Cash on delivery (เก็บเงินปลายทาง)
   - **TrueMoney Wallet** — Pay by TrueMoney Wallet on delivery
 
-To select Cash on Delivery: use `python3 test_grid_agent.py "What cell is the Cash payment option?"`.
+To select Cash on Delivery: use `python3 find_element.py "What cell is the Cash payment option?"`.
 
 ### Product Quantity Limits
 
