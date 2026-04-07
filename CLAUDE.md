@@ -29,11 +29,21 @@
 
 ### How it works
 
-Three scripts in the project directory handle coordinate finding:
+Four scripts in the project directory handle coordinate finding and screen inspection:
 
 1. **`grid.py`** — Overlays a labeled 64px grid on `screen.png`, saves as `screen_grid.png`. Columns labeled A–N at the bottom, rows 1–36 on the left.
 2. **`test_grid_agent.py "<question>"`** — Automated: takes a screenshot, generates the grid, sends it to a vision model (Gemma 4 31B), and returns the cell + pixel coordinates.
 3. **`cell2coords.py <cell>`** — Converts a cell reference (e.g. `D12`) to center pixel `(x, y)` on the original 904x2316 screen.
+4. **`phone_status.py [optional prompt]`** — Takes a screenshot (no grid) and sends it to the vision model for a detailed description of the current screen state. Use this for verifying what's on screen before/after actions. Supports an optional extra prompt for specific questions.
+
+```bash
+# Describe current screen
+python3 phone_status.py
+
+# Ask a specific question about the screen
+python3 phone_status.py "Is there a popup showing?"
+python3 phone_status.py "What is the quantity displayed?"
+```
 
 ### Quick method (automated — preferred)
 
@@ -119,28 +129,56 @@ This popup also has `resource-id="asuk.com.android.app:id/goToLinkButton"` (ช�
 
 After dismissing a popup, the app may show another one. Always re-check with `uiautomator dump` + `wc -c` before proceeding.
 
-## Standard Workflow
+## Verify-Act-Verify Workflow
+
+**All ADB automation MUST follow this loop.** Never assume an action succeeded — always verify.
+
+### The Loop
+
+1. **Pre-Action Check**: Before any tap/swipe, check the current screen to confirm you're on the correct page and no overlays are blocking the UI.
+   ```bash
+   python3 phone_status.py  # or with a specific question
+   ```
+2. **Precise Action**: Perform the ADB command (tap, swipe, text input, etc.).
+3. **Post-Action Verification**: Immediately verify the action had the intended effect (e.g., if you tapped "+", verify the quantity actually increased; if you tapped a button, verify the next screen loaded).
+   ```bash
+   python3 phone_status.py "Did the quantity increase?"
+   ```
+4. **Error Handling**: If the state didn't change or a popup appeared, resolve the issue before retrying. Do NOT blindly repeat actions.
+
+### Standard Workflow (with Verify-Act-Verify)
 
 ```bash
 # 1. Launch app
 adb shell monkey -p asuk.com.android.app -c android.intent.category.LAUNCHER 1
-
-# 2. Wait for load
 sleep 5
 
-# 3. Dismiss any popup
+# 2. VERIFY: Check what's on screen (popup? Play Store? correct page?)
+adb shell dumpsys window | grep mCurrentFocus
+python3 phone_status.py "Is there a popup or overlay showing?"
+
+# 3. Handle popups if present
 adb shell input keyevent 4
 sleep 2
+python3 phone_status.py  # verify popup is gone
 
-# 4. Find element and get coordinates (takes screenshot automatically)
+# 4. Find element and get coordinates
 python3 test_grid_agent.py "What cell is the 7 Delivery button?"
 
-# 5. Tap the returned coordinates
+# 5. ACT: Tap the returned coordinates
 adb shell input tap <x> <y>
+sleep 2
 
-# 6. Verify with another screenshot
-python3 test_grid_agent.py "What screen am I on?"
+# 6. VERIFY: Confirm the tap worked
+python3 phone_status.py "Am I on the 7 Delivery page?"
 ```
+
+### Key Rules
+
+- **Never chain multiple taps without verifying each one.** Each action gets its own verify step.
+- **Quantity changes**: Always verify the displayed number after each +/- tap. The app may silently cap at stock limits.
+- **Page transitions**: After tapping a navigation button, verify you landed on the expected page before proceeding.
+- **Use `phone_status.py`** for verification (detailed description), **`test_grid_agent.py`** for finding coordinates to tap.
 
 ## Other ADB Commands
 
