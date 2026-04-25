@@ -2,10 +2,16 @@
 """Take a screenshot of the phone and describe what's on screen, with optional additional prompt."""
 
 import base64
+import os
 import subprocess
 import sys
 
+from dotenv import load_dotenv
 from openai import OpenAI
+
+load_dotenv()
+
+VISION_MODEL = os.getenv("VISION_MODEL", "gemma-4-26B-A4B-it-uncensored-heretic-Q8_0.gguf")
 
 # Optional additional prompt from argv
 extra_prompt = " ".join(sys.argv[1:]) if len(sys.argv) > 1 else ""
@@ -35,8 +41,7 @@ if extra_prompt:
     user_text += f"\n\nAlso: {extra_prompt}"
 
 response = client.chat.completions.create(
-    # model="gemma-4-31B-it-uncensored-heretic-Q8_0.gguf",
-    model="gemma-4-26B-A4B-it-uncensored-heretic-Q8_0.gguf",
+    model=VISION_MODEL,
     messages=[
         {"role": "system", "content": system_prompt},
         {

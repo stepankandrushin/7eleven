@@ -25,6 +25,8 @@
 
 ### How it works
 
+The vision model is configured via `VISION_MODEL` in `.env` (fallback: `gemma-4-26B-A4B-it-uncensored-heretic-Q8_0.gguf`).
+
 Four scripts in the project directory handle coordinate finding and screen inspection:
 
 1. **`grid.py`** — Overlays a labeled 64px grid on `screen.png`, saves as `screen_grid.png`. Columns labeled A–N at the bottom, rows 1–36 on the left.

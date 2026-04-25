@@ -1,9 +1,15 @@
 import base64
+import os
 import re
 import subprocess
 import sys
 
+from dotenv import load_dotenv
 from openai import OpenAI
+
+load_dotenv()
+
+VISION_MODEL = os.getenv("VISION_MODEL", "gemma-4-26B-A4B-it-uncensored-heretic-Q8_0.gguf")
 
 question = sys.argv[1]
 
@@ -24,8 +30,7 @@ client = OpenAI(
 )
 
 response = client.chat.completions.create(
-    # model="gemma-4-31B-it-uncensored-heretic-Q8_0.gguf",
-    model="gemma-4-26B-A4B-it-uncensored-heretic-Q8_0.gguf",
+    model=VISION_MODEL,
     messages=[
         {
             "role": "system",

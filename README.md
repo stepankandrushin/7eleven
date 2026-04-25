@@ -20,11 +20,12 @@ cp .env.sample .env
 | `EMAIL_PORT` | IMAP port (993 for SSL) |
 | `SEVEN_EMAIL` | 7-Eleven account email |
 | `SEVEN_PASSWORD` | 7-Eleven account password (legacy, site uses OTP now) |
+| `VISION_MODEL` | Vision model name for grid/phone scripts (default: `gemma-4-26B-A4B-it-uncensored-heretic-Q8_0.gguf`) |
 
 3. Install dependencies:
 
 ```bash
-uv pip install websockets
+uv pip install -r requirements.txt
 ```
 
 ## Usage
