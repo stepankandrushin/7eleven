@@ -5,16 +5,35 @@
 - **Description**: 7-Eleven Thailand official online shopping and delivery website
 
 ## Product Found
+
+### App (7 Delivery) Products
+- **1L Single**: น้ำแร่ธรรมชาติเอเวียง 1L — ฿79/bottle, max 22 units (no pack option)
+- **500ml Single**: น้ำแร่เอเวียง 500 มล. — ฿48/bottle, max 35 units
+- **500ml Case (ลัง)**: น้ำแร่เอเวียง 500 มล. (ลัง) — ฿1,080/case (24 bottles), only 1 unit available
+- **330ml Can Pack**: เอเวียงสปาร์คกลิ้งแคน 330 มล. (พ.4) — ฿210/pack of 4
+
+### Website Product
 - **Item**: เอเวียง น้ำแร่ธรรมชาติ 750 มล. จุกสปอร์ต (ยกลัง 12 ขวด)
 - **English**: Evian Natural Mineral Water 750ml Sport Cap (Case of 12 bottles)
 - **Product Code**: 420672010
 - **Price**: ฿895 per case (was ฿948, 6% discount)
-- **Note**: 1L (1000ml) Evian not available; 750ml 12-bottle case is the closest option
 
-## Order Details (3 cases = 36 bottles)
+## Order Details
+
+### Web Order (previous)
 - **Total**: ฿2,685
 - **Quantity**: 3 cases × 12 bottles = 36 bottles
 - **Delivery**: To be selected at checkout
+
+### App Order (2026-04-25)
+- **500ml singles** × 35 = ฿1,680
+- **1L singles** × 22 = ฿1,738
+- **500ml case** × 1 = ฿1,080
+- **Total**: ฿4,498
+- **Delivery fee**: Free
+- **Payment**: Cash on delivery
+- **Address details**: `<building>`
+- **Store**: `<favorite store>`
 
 ## Login Credentials
 - **Email**: your@email.com (credentials in `.env` as `SEVEN_EMAIL` / `SEVEN_PASSWORD`)
