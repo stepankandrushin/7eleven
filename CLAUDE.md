@@ -75,6 +75,25 @@ python3 cell2coords.py D12
 adb shell input tap 224 736
 ```
 
+## Google Play Update Popup
+
+A **Google Play update popup** appears frequently when launching or navigating the app. It is a **system-level overlay** (package `com.android.vending`) that blocks all taps on the app.
+
+When the popup appears, **update the app** by tapping the "Update" button.
+
+### How to detect
+
+Use `phone_status.py` — it will describe it as a "Google Play update notification" overlay.
+
+### How to update
+
+Use `find_element.py` to locate the Update button:
+
+```bash
+python3 find_element.py "What cell is the Update button?"
+# Then tap the returned coordinates
+```
+
 ## Campaign Popups
 
 The app shows campaign/promotion popups frequently (on launch, when entering 7 Delivery, etc.). These are modal overlays that intercept all taps.
@@ -264,3 +283,13 @@ The +/- quantity selector has a **stock-based maximum**. The app silently caps a
 For ordering via the ALL Online website (Chrome + CDP), see docs/web_ordering.md. Note: the website does **NOT** support cash on delivery — that's why we use the app.
 
 Also see docs/7eleven_order_findings.md for general product/store details.
+
+## Asking Questions to phone_status.py
+
+When using `phone_status.py` for verification, follow these guidelines:
+
+- **Ask standalone questions** — don't assume context from previous calls. Each call is independent.
+- **Bad**: `"Is the popup gone now?"` — implies temporal context the model may not have.
+- **Good**: `"Is there a popup on screen?"` / `"What's on screen?"` / `"What page am I on?"`
+- **Combine open-ended + specific**: `"What's on screen? Is the 7 Delivery button visible and tappable?"` — gives full context plus the specific answer you need.
+- **Open-ended is often better**: `"What's on screen?"` gives a full picture and lets you decide next steps.
