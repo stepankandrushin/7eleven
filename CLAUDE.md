@@ -23,6 +23,15 @@
 
 **NEVER estimate coordinates from screenshots visually.** Use the grid-based vision method to get accurate click coordinates.
 
+**NEVER read screenshot PNGs directly** (any file under `screenshots/`, including `_grid.png` overlays). Multimodal hosts that ingest the raw image cannot reliably resolve grid cells or pixel coordinates. Always go through our scripts:
+
+- `phone_status.py` — "what's on screen" (description)
+- `find_element.py` — "where is X" (returns cell + `(x, y)` pixel coords)
+- `grid.py <path>` — overlays the labeled grid on an existing screenshot (used by `find_element.py`; not a substitute for it)
+- `cell2coords.py <cell>` — converts a cell ref like `D12` into pixel coords
+
+This rule applies to every agent operating in this repo (Claude Code, `.pi`, and any other CLI assistant).
+
 ### How it works
 
 The vision model is configured via `VISION_MODEL` in `.env` (fallback: `gemma-4-26B-A4B-it-uncensored-heretic-Q8_0.gguf`).
@@ -71,7 +80,8 @@ TS=$(python3 -c 'from datetime import datetime as d; n=d.now(); print(n.strftime
 DAY=${TS:0:10}
 mkdir -p "screenshots/$DAY"
 SHOT="screenshots/$DAY/screen-$TS.png"
-adb shell screencap -p /sdcard/screen.png && adb pull /sdcard/screen.png "$SHOT"
+DEV="/sdcard/screen-$TS.png"
+adb shell screencap -p "$DEV" && adb pull "$DEV" "$SHOT" && adb shell rm -f "$DEV"
 
 # 2. Generate grid overlay (writes <stem>_grid.png next to the input)
 python3 grid.py "$SHOT"

@@ -79,6 +79,8 @@ def generate_grid(input_path):
 
 
 if __name__ == "__main__":
-    in_path = sys.argv[1] if len(sys.argv) > 1 else "screen.png"
+    if len(sys.argv) < 2:
+        sys.exit("usage: grid.py <screenshot-path>")
+    in_path = sys.argv[1]
     out_path, w, h, cols, rows = generate_grid(in_path)
     print(f"Saved {out_path} ({w}x{h}), {cols} cols x {rows} rows")
