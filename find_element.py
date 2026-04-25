@@ -1,11 +1,13 @@
 import base64
 import os
 import re
-import subprocess
 import sys
 
 from dotenv import load_dotenv
 from openai import OpenAI
+
+from grid import generate_grid
+from screenshot_utils import take_screenshot
 
 load_dotenv()
 
@@ -13,15 +15,10 @@ VISION_MODEL = os.getenv("VISION_MODEL", "gemma-4-26B-A4B-it-uncensored-heretic-
 
 question = sys.argv[1]
 
-# Take screenshot from device
-subprocess.run(["adb", "shell", "screencap", "-p", "/sdcard/screen.png"], check=True)
-subprocess.run(["adb", "pull", "/sdcard/screen.png", "screen.png"], check=True)
+shot_path = take_screenshot()
+grid_path, *_ = generate_grid(str(shot_path))
 
-# Generate grid image
-subprocess.run(["python3", "grid.py", "screen.png"], check=True)
-
-# Encode image
-with open("screen_grid.png", "rb") as f:
+with open(grid_path, "rb") as f:
     img_b64 = base64.b64encode(f.read()).decode()
 
 client = OpenAI(

@@ -3,11 +3,12 @@
 
 import base64
 import os
-import subprocess
 import sys
 
 from dotenv import load_dotenv
 from openai import OpenAI
+
+from screenshot_utils import take_screenshot
 
 load_dotenv()
 
@@ -16,12 +17,9 @@ VISION_MODEL = os.getenv("VISION_MODEL", "gemma-4-26B-A4B-it-uncensored-heretic-
 # Optional additional prompt from argv
 extra_prompt = " ".join(sys.argv[1:]) if len(sys.argv) > 1 else ""
 
-# Take screenshot from device
-subprocess.run(["adb", "shell", "screencap", "-p", "/sdcard/screen.png"], check=True)
-subprocess.run(["adb", "pull", "/sdcard/screen.png", "screen.png"], check=True)
+shot_path = take_screenshot()
 
-# Encode image (raw screenshot, no grid needed)
-with open("screen.png", "rb") as f:
+with open(shot_path, "rb") as f:
     img_b64 = base64.b64encode(f.read()).decode()
 
 client = OpenAI(

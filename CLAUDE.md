@@ -29,10 +29,12 @@ The vision model is configured via `VISION_MODEL` in `.env` (fallback: `gemma-4-
 
 Four scripts in the project directory handle coordinate finding and screen inspection:
 
-1. **`grid.py`** — Overlays a labeled 64px grid on `screen.png`, saves as `screen_grid.png`. Columns labeled A–N at the bottom, rows 1–36 on the left.
-2. **`find_element.py "<question>"`** — Automated: takes a screenshot, generates the grid, sends it to the vision model, and returns the cell + pixel coordinates.
+1. **`grid.py <path>`** — Overlays a labeled 64px grid on the given screenshot, saves as `<stem>_grid.png` next to it. Columns labeled A–N at the bottom, rows 1–36 on the left.
+2. **`find_element.py "<question>"`** — Automated: takes a timestamped screenshot under `screenshots/YYYY-mm-dd/`, generates the grid alongside it, sends it to the vision model, and returns the cell + pixel coordinates.
 3. **`cell2coords.py <cell>`** — Converts a cell reference (e.g. `D12`) to center pixel `(x, y)` on the original 904x2316 screen.
-4. **`phone_status.py [optional prompt]`** — Takes a screenshot (no grid) and sends it to the vision model for a detailed description of the current screen state. Use this for verifying what's on screen before/after actions. Supports an optional extra prompt for specific questions.
+4. **`phone_status.py [optional prompt]`** — Takes a timestamped screenshot under `screenshots/YYYY-mm-dd/` (no grid) and sends it to the vision model for a detailed description of the current screen state. Use this for verifying what's on screen before/after actions. Supports an optional extra prompt for specific questions.
+
+All screenshots are saved to `screenshots/YYYY-mm-dd/screen-YYYY-mm-dd-HH-mm-ss-msc.png` (millisecond suffix) so each capture is preserved — nothing overwrites the previous shot.
 
 ```bash
 # Describe current screen
@@ -60,14 +62,22 @@ adb shell input tap 352 288
 
 ### Manual method
 
+Screenshots are saved to a dated folder with a timestamped filename so each capture is preserved (no overwrites). Path format: `screenshots/YYYY-mm-dd/screen-YYYY-mm-dd-HH-mm-ss-msc.png` (the `msc` suffix is milliseconds).
+
 ```bash
-# 1. Take screenshot
-adb shell screencap -p /sdcard/screen.png && adb pull /sdcard/screen.png screen.png
+# 1. Take screenshot (timestamped, into dated folder)
+# macOS `date` lacks `%N`, so build the millisecond suffix in Python.
+TS=$(python3 -c 'from datetime import datetime as d; n=d.now(); print(n.strftime("%Y-%m-%d-%H-%M-%S-")+f"{n.microsecond//1000:03d}")')
+DAY=${TS:0:10}
+mkdir -p "screenshots/$DAY"
+SHOT="screenshots/$DAY/screen-$TS.png"
+adb shell screencap -p /sdcard/screen.png && adb pull /sdcard/screen.png "$SHOT"
 
-# 2. Generate grid overlay
-python3 grid.py screen.png
+# 2. Generate grid overlay (writes <stem>_grid.png next to the input)
+python3 grid.py "$SHOT"
 
-# 3. View screen_grid.png to identify the cell visually
+# 3. View "screenshots/$DAY/screen-${TS}_grid.png" to identify the cell visually
+#    (e.g. screenshots/2026-04-25/screen-2026-04-25-14-23-09-456_grid.png)
 
 # 4. Get coordinates
 python3 cell2coords.py D12
