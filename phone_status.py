@@ -13,6 +13,7 @@ from screenshot_utils import take_screenshot
 load_dotenv()
 
 VISION_MODEL = os.getenv("VISION_MODEL", "gemma-4-26B-A4B-it-uncensored-heretic-Q8_0.gguf")
+VISION_API_URL = os.getenv("VISION_API_URL", "http://localhost:8020/v1")
 
 # Optional additional prompt from argv
 extra_prompt = " ".join(sys.argv[1:]) if len(sys.argv) > 1 else ""
@@ -23,7 +24,7 @@ with open(shot_path, "rb") as f:
     img_b64 = base64.b64encode(f.read()).decode()
 
 client = OpenAI(
-    base_url="http://localhost:8020/v1",
+    base_url=VISION_API_URL,
     api_key="none",
 )
 

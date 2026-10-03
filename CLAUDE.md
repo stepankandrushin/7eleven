@@ -34,7 +34,7 @@ This rule applies to every agent operating in this repo (Claude Code, `.pi`, and
 
 ### How it works
 
-The vision model is configured via `VISION_MODEL` in `.env` (fallback: `gemma-4-26B-A4B-it-uncensored-heretic-Q8_0.gguf`).
+The vision model is configured via `VISION_MODEL` in `.env` (fallback: `gemma-4-26B-A4B-it-uncensored-heretic-Q8_0.gguf`). The server it is asked on is `VISION_API_URL`, an OpenAI-compatible endpoint (fallback: `http://localhost:8020/v1`).
 
 Four scripts in the project directory handle coordinate finding and screen inspection:
 
