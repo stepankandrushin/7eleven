@@ -96,6 +96,6 @@ OTP sender: `noreply@7eleven.co.th`, subject contains "แจ้งรหัส�
 - docs/app_ordering.md — read before placing an order in the app, and when a screen is not the expected one: app navigation, the launch check, the commands that detect and dismiss each popup, the search bar, the checkout flow step by step with resource ids and bounds, the payment options, the complete order checklist and the table of pitfalls.
 - docs/web_ordering.md — for ordering via the ALL Online website (Chrome + CDP).
 - docs/7eleven_order_findings.md — general product/store details.
-- HISTORY.md — what was done when; not loaded at the start of a session.
+- history/ — what was done when; not loaded at the start of a session.
 
-**Keep this file under 12 KB**: every session loads it whole. A new rule or trap goes here in a line or two with its reason, its procedure and examples into docs/, what was done when into HISTORY.md.
+**Keep this file under 12 KB**: every session loads it whole. A new rule or trap goes here in a line or two with its reason, its procedure and examples into docs/, what was done when into history/.
