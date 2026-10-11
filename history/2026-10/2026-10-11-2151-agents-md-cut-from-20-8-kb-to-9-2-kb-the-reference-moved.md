@@ -1,8 +1,4 @@
-# History
-
-What was done in this repo and when, newest first: changes to the instructions and docs, results of past runs, states that no longer hold. AGENTS.md and docs/ say what is true now. This file is not loaded at the start of a session; read it to find out how something got the way it is.
-
-## 2026-10-11 — AGENTS.md cut from 20.8 KB to 9.2 KB: the reference moved to docs/adb_automation.md and docs/app_ordering.md
+# AGENTS.md cut from 20.8 KB to 9.2 KB: the reference moved to docs/adb_automation.md and docs/app_ordering.md
 
 The owner's reason: "It doesn't make sense to load such a large AGENTS.md each time. Less tokens go to work then and more expensive." AGENTS.md is loaded whole into every session started in this repo, and it was 20,847 bytes (435 lines), most of it procedures, code examples and the order checklist. It is 9,156 bytes (101 lines) now. The text moved as it stood, cut by line number; only what stays in AGENTS.md is written shorter.
 
