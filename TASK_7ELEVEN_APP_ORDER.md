@@ -7,7 +7,7 @@ Prefer Evian 1L if available. Fallback: Evian 750ml Sport Cap, case of 12 (produ
 
 ## Before You Start
 
-1. **Read AGENTS.md** — it has all ADB automation instructions, UI Automator usage, popup handling, etc.
+1. **Read AGENTS.md**, then docs/adb_automation.md and docs/app_ordering.md — they have all ADB automation instructions, UI Automator usage, popup handling, etc.
 2. **Check ADB connection**: `adb devices` (must show "device", not "unauthorized")
 3. **Get screen resolution**: `adb shell wm size && adb shell wm density`
 
@@ -19,7 +19,7 @@ Prefer Evian 1L if available. Fallback: Evian 750ml Sport Cap, case of 12 (produ
 
 ## Critical Rules
 
-1. **NEVER guess tap coordinates from screenshots.** Always use UI Automator dump to get exact bounds, then tap center. See AGENTS.md for details.
+1. **NEVER guess tap coordinates from screenshots.** Always use UI Automator dump to get exact bounds, then tap center. See AGENTS.md and docs/adb_automation.md for details.
 2. **Campaign popups appear frequently** — detect with `wc -c` on UI dump (~2845 bytes = popup). Dismiss with `adb shell input keyevent 4` (back button).
 3. **Always verify state** after each action: dump UI or take screenshot.
 
