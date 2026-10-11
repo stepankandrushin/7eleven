@@ -40,7 +40,7 @@ python3 check_email.py 10    # latest 10 emails
 
 ### Browser automation
 
-Requires Chrome running with remote debugging. See `CLAUDE.md` for full instructions on:
+Requires Chrome running with remote debugging. See `AGENTS.md` for full instructions on:
 - Launching Chrome with `--remote-debugging-port=9222`
 - 7-Eleven OTP login flow
 - Filling address forms with cascading dropdowns
