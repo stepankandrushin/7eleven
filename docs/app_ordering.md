@@ -1,10 +1,10 @@
-# Ordering in the app (7 Delivery)
+# Ordering in the app 7 Delivery
 
-The 7-Eleven TH app screen by screen: navigation, the launch check, the popups, the search bar, the checkout flow with its resource ids and bounds, and the complete order checklist with the pitfalls. AGENTS.md keeps the rules in short; how to find what to tap and the ADB commands themselves are in adb_automation.md.
+The 7-Eleven TH app screen by screen: navigation, the launch check, the popups, the search bar, the checkout flow with its resource ids and bounds, and the complete order checklist with the pitfalls. AGENTS.md keeps the rules in short; how to find what to tap and the ADB commands themselves are in adb_automation.md
 
 ## 7-Eleven App
 
-The package name, the launch command and the two activities are in AGENTS.md.
+The package name, the launch command and the two activities are in AGENTS.md
 
 ### App Navigation
 
@@ -15,7 +15,7 @@ The package name, the launch command and the two activities are in AGENTS.md.
 
 ## Launching the App — Always Verify Focus
 
-After launching with `monkey`, the app may occasionally land on the **Play Store page** instead of the app itself. **Always check `mCurrentFocus`** after launch:
+After launching with `monkey` the app may occasionally land on the **Play Store page** instead of the app itself. **Always check `mCurrentFocus`** after launch:
 
 ```bash
 adb shell monkey -p asuk.com.android.app -c android.intent.category.LAUNCHER 1
@@ -28,7 +28,7 @@ adb shell dumpsys window | grep mCurrentFocus
 
 ## Google Play Update Popup
 
-A **Google Play update popup** appears frequently when launching or navigating the app. It is a **system-level overlay** (package `com.android.vending`) that blocks all taps on the app.
+A **Google Play update popup** appears frequently when launching or navigating the app. It is a **system-level overlay** package `com.android.vending` that blocks all taps on the app.
 
 When the popup appears, **update the app** by tapping the "Update" button.
 
@@ -56,7 +56,7 @@ adb shell uiautomator dump /sdcard/ui.xml && adb pull /sdcard/ui.xml /tmp/ui.xml
 ```
 
 - **~2845 bytes** = popup is showing (only the overlay is in the UI tree)
-- **Large file (10KB+)** = real page content is visible
+- **Large file 10KB+** = real page content is visible
 
 ### How to dismiss popups
 
@@ -66,7 +66,7 @@ adb shell uiautomator dump /sdcard/ui.xml && adb pull /sdcard/ui.xml /tmp/ui.xml
 adb shell input keyevent 4
 ```
 
-**Method 2**: Find and tap the X/cancel button from UI dump:
+**Method 2** Find and tap the X/cancel button from UI dump:
 
 ```bash
 # The popup typically has: resource-id="asuk.com.android.app:id/cancelButton"
@@ -74,11 +74,11 @@ adb shell input keyevent 4
 grep "cancelButton" /tmp/ui.xml  # find bounds
 ```
 
-**Method 3**: If back button also dismisses the page, find the `cancelButton` bounds from the UI dump and tap the center of those bounds.
+**Method 3** - If back button also dismisses the page, find the `cancelButton` bounds from the UI dump and tap the center of those bounds
 
 ### Post-order popups (back button does NOT work)
 
-After placing an order, a promotion popup appears over the order tracking page. Unlike other popups, **the back button does not dismiss it**. You must find and tap the `closeButton`:
+After placing an order, a promotion popup appears over the order tracking page. Unlike other popups, **the back button does not dismiss it**. You must find and tap the `closeButton`
 
 ```bash
 grep "closeButton" /tmp/ui.xml | grep -o 'bounds="[^"]*"'
@@ -97,10 +97,10 @@ After dismissing a popup, the app may show another one. Always re-check with `ui
 2. **Type your query** with `adb shell input text "query"` — do NOT press Enter/keyevent 66 (it doesn't submit the search in this field)
 3. **Search suggestions appear below** — use `python3 find_element.py "What cell is the first search suggestion?"` to find and tap suggestions. Always verify the result with a screenshot after tapping.
 
-## Checkout Flow (7 Delivery)
+## Checkout Flow 7 Delivery
 
 ### Product Quantity & Packaging
-- **Verify Packaging**: Before adjusting quantity (+/-), always check if the product is a single item or a pack/case.
+- **Verify Packaging**: Before adjusting quantity +/- always check if the product is a single item or a pack/case
 - **Read Labels Carefully**: Look for keywords like "Pack", "Case", "ลัง" (Case), or "แพ็ก" (Pack) in the product title and image.
 - **Calculate Total**: Ensure the `(Quantity selected) * (Items per pack)` equals the requested amount before adding to the basket.
 
@@ -108,21 +108,21 @@ After dismissing a popup, the app may show another one. Always re-check with `ui
 
 1. **Product page**: Set quantity with +/- buttons, tap "Add to basket X.XX Baht"
 2. **Search results**: Bottom bar shows basket count and "View basket" button → tap it
-3. **Basket page**: Shows items, subtotal, total → tap "Next" (button `resource-id=asuk.com.android.app:id/cartOrderButton`, bounds `[53,2011][851,2103]`)
-4. **Order summary** (`OrderSummaryActivity`):
-   - **Address details field** (`resource-id=asuk.com.android.app:id/addressDetailEditText`): Shows hint text "Room number 711" when empty. **Tap to focus, type directly** (hint is not real content). Use `adb shell input text "My%sBuilding%s12"` with `%s` for spaces.
-   - **Note to driver field** (`resource-id=asuk.com.android.app:id/valueEditText` under "Note to driver" title): Separate from Address details.
-   - **Scroll down** to see product list, delivery time ("Now" / "Schedule"), coupons, payment options. The RecyclerView needs **slow swipes** (`1000ms duration`) to reveal content below the initial view:
+3. **Basket page**: Shows items, subtotal, total → tap "Next" button `resource-id=asuk.com.android.app:id/cartOrderButton` bounds `[53,2011][851,2103]`
+4. **Order summary** `OrderSummaryActivity`
+   - **Address details field** `resource-id=asuk.com.android.app:id/addressDetailEditText` - Shows hint text "Room number 711" when empty. **Tap to focus, type directly** (hint is not real content). Use `adb shell input text "My%sBuilding%s12"` with `%s` for spaces.
+   - **Note to driver field** `resource-id=asuk.com.android.app:id/valueEditText` under "Note to driver" title: Separate from Address details.
+   - **Scroll down** to see product list, delivery time ("Now" / "Schedule"), coupons, payment options. The RecyclerView needs **slow swipes** `1000ms duration` to reveal content below the initial view:
      ```bash
      adb shell input swipe 452 1500 452 1000 1000
      ```
-   - After scrolling, tap "Next" (`resource-id=asuk.com.android.app:id/placeOrderButton`, bounds `[42,2032][862,2103]`)
+   - After scrolling, tap "Next" `resource-id=asuk.com.android.app:id/placeOrderButton` bounds `[42,2032][862,2103]`
 5. **Confirmation page** (bottom sheet overlay):
    - Shows: Payment method, Subtotal, Delivery fee, Discounts, Coupon/Promotion code, Net price
-   - **"Place order" button** (`resource-id=asuk.com.android.app:id/confirmButton`, bounds `[32,1833][872,1980]`, center ≈ `452, 1907`)
-   - **"Back" button** (`resource-id=asuk.com.android.app:id/cancelButton`, bounds `[32,1980][872,2103]`)
-6. **Processing** (`OrderTrackingLoadingActivity`): "Please wait a moment... Sending orders to the store" — wait ~10 seconds
-7. **Order tracking** (`OrderTrackingActivity`): Status flow (Awaiting order → Preparing → Preparing complete → On delivery → Delivered). Post-order promotion popup appears — dismiss with `closeButton` (NOT back button).
+   - **"Place order" button** `resource-id=asuk.com.android.app:id/confirmButton` bounds `[32,1833][872,1980]` center ≈ `452, 1907`
+   - **"Back" button** `resource-id=asuk.com.android.app:id/cancelButton` bounds `[32,1980][872,2103]`
+6. **Processing** `OrderTrackingLoadingActivity` - "Please wait a moment... Sending orders to the store" — wait ~10 seconds
+7. **Order tracking** `OrderTrackingActivity` - Status flow (Awaiting order → Preparing → Preparing complete → On delivery → Delivered). Post-order promotion popup appears — dismiss with `closeButton` (NOT back button).
 
 ### Payment Options (in Order Summary)
 
@@ -167,18 +167,18 @@ adb shell dumpsys window | grep mCurrentFocus  # expect MainActivity
 ```
 
 ### 2. Search & Add Products
-- Tap search bar (ask for **center** in find_element.py)
+- Tap search bar ask for **center** in find_element.py
 - Type query (no Enter needed)
 - Tap search suggestion
-- On product page: set quantity with +/-, verify displayed number, tap "Add to basket"
+- On product page: set quantity with +/- verify displayed number, tap "Add to basket"
 - Repeat for each product
 
 ### 3. Basket → Next
 - On search results: tap "View basket" (bottom bar)
-- Basket page: verify items, tap "Next" (`cartOrderButton`, `[53,2011][851,2103]`)
+- Basket page: verify items, tap "Next" `cartOrderButton` `[53,2011][851,2103]`
 
 ### 4. Order Summary — Address Details
-- Tap Address details field (`addressDetailEditText`)
+- Tap Address details field `addressDetailEditText`
 - **Type directly** (hint text "Room number 711" is placeholder, not real content)
 - Use `%s` for spaces: `adb shell input text "My%sBuilding%s12"`
 - **Dismiss keyboard**: `adb shell input keyevent 4` (Back)
@@ -186,7 +186,7 @@ adb shell dumpsys window | grep mCurrentFocus  # expect MainActivity
 - **NEVER tap `(100, 200)` to dismiss keyboard** — that's the back button!
 
 ### 5. Order Summary — Scroll to Payment
-- Use **slow swipes** (1000ms duration) to reveal payment options:
+- Use **slow swipes** 1000ms duration to reveal payment options:
 ```bash
 adb shell input swipe 452 1500 452 1000 1000
 adb shell input swipe 452 1500 452 1000 1000
@@ -196,11 +196,11 @@ adb shell input swipe 452 1500 452 1000 1000
 - Verify: `grep "selectedCheckBoxView" /tmp/ui.xml` should show inside Cash cardview
 
 ### 6. Order Summary — Tap Next
-- "Next" button: `placeOrderButton`, bounds `[42,2032][862,2103]`, center ≈ `(452, 2067)`
+- "Next" button: `placeOrderButton` bounds `[42,2032][862,2103]` center ≈ `(452, 2067)`
 
 ### 7. Confirmation — Place Order
 - Bottom sheet shows: Payment method, Subtotal, Delivery fee, Net price
-- "Place order" button: `confirmButton`, bounds `[32,1833][872,1980]`, center ≈ `(452, 1907)`
+- "Place order" button: `confirmButton` bounds `[32,1833][872,1980]` center ≈ `(452, 1907)`
 - Wait ~10 seconds for `OrderTrackingLoadingActivity`
 
 ### 8. Order Tracking
@@ -214,10 +214,10 @@ adb shell input swipe 452 1500 452 1000 1000
 ### Key Pitfalls to Avoid
 | Pitfall | Fix |
 |---------|-----|
-| `adb input text` eats spaces | Use `%s`: `adb shell input text "A%sB%sC"` |
+| `adb input text` eats spaces | Use `%s` `adb shell input text "A%sB%sC"` |
 | Tapping `(100,200)` goes back | That's the back button area. Use `keyevent 4` instead |
 | Fast swipe doesn't scroll near edges | Use slow swipe: add `1000` duration |
 | Deleting hint text in Address details | Don't delete — hint is placeholder. Just type |
 | Keyboard corrupts text on swipe | Dismiss keyboard BEFORE swiping |
 | Cash payment not selected by default | Explicitly tap Cash cardview |
-| "Place order" tap misses | Button center is `(452, 1907)`, not bottom of screen |
+| "Place order" tap misses | Button center is `(452, 1907)` not bottom of screen |

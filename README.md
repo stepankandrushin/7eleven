@@ -1,6 +1,6 @@
 # 7-Eleven Thailand Automation
 
-Scripts and docs for automating orders on [ALL Online (7-Eleven Thailand)](https://www.allonline.7eleven.co.th).
+Scripts and docs for automating orders on [ALL Online 7-Eleven Thailand](https://www.allonline.7eleven.co.th).
 
 ## Setup
 
@@ -17,11 +17,11 @@ cp .env.sample .env
 | `EMAIL_USER` | Your email address (for IMAP login) |
 | `EMAIL_PASSWORD` | Your email password |
 | `EMAIL_HOST` | IMAP server hostname |
-| `EMAIL_PORT` | IMAP port (993 for SSL) |
+| `EMAIL_PORT` | IMAP port 993 for SSL |
 | `SEVEN_EMAIL` | 7-Eleven account email |
 | `SEVEN_PASSWORD` | 7-Eleven account password (legacy, site uses OTP now) |
-| `VISION_MODEL` | Vision model name for grid/phone scripts (default: `gemma-4-26B-A4B-it-uncensored-heretic-Q8_0.gguf`) |
-| `VISION_API_URL` | OpenAI-compatible endpoint of the vision server (default: `http://localhost:8020/v1`) |
+| `VISION_MODEL` | Vision model name for grid/phone scripts default: `gemma-4-26B-A4B-it-uncensored-heretic-Q8_0.gguf` |
+| `VISION_API_URL` | OpenAI-compatible endpoint of the vision server default: `http://localhost:8020/v1` |
 
 3. Install dependencies:
 

@@ -1,20 +1,20 @@
 # Driving the phone over ADB
 
-How the phone is driven, whatever the task: the grid vision scripts that find what to tap, how to ask phone_status.py a question, the Verify-Act-Verify loop with its standard workflow, and the ADB commands with the long form of the input traps. AGENTS.md keeps the rules in short; the steps of an order in the app are in app_ordering.md.
+How the phone is driven, whatever the task: the grid vision scripts that find what to tap, how to ask phone_status.py a question, the Verify-Act-Verify loop with its standard workflow, and the ADB commands with the long form of the input traps. AGENTS.md keeps the rules in short; the steps of an order in the app are in app_ordering.md
 
 ## ADB Tap Coordinates — Grid Vision Method
 
-The two rules of this method (never estimate coordinates from a screenshot, never read a screenshot PNG directly) and the short list of the scripts are in AGENTS.md.
+The two rules of this method (never estimate coordinates from a screenshot, never read a screenshot PNG directly) and the short list of the scripts are in AGENTS.md
 
 ### How it works
 
-The vision model is configured via `VISION_MODEL` in `.env` (fallback: `gemma-4-26B-A4B-it-uncensored-heretic-Q8_0.gguf`). The server it is asked on is `VISION_API_URL`, an OpenAI-compatible endpoint (fallback: `http://localhost:8020/v1`).
+The vision model is configured via `VISION_MODEL` in `.env` fallback: `gemma-4-26B-A4B-it-uncensored-heretic-Q8_0.gguf` The server it is asked on is `VISION_API_URL` an OpenAI-compatible endpoint fallback: `http://localhost:8020/v1`
 
 Four scripts in the project directory handle coordinate finding and screen inspection:
 
 1. **`grid.py <path>`** — Overlays a labeled 64px grid on the given screenshot, saves as `<stem>_grid.png` next to it. Columns labeled A–N at the bottom, rows 1–36 on the left.
-2. **`find_element.py "<question>"`** — Automated: takes a timestamped screenshot under `screenshots/YYYY-mm-dd/`, generates the grid alongside it, sends it to the vision model, and returns the cell + pixel coordinates.
-3. **`cell2coords.py <cell>`** — Converts a cell reference (e.g. `D12`) to center pixel `(x, y)` on the original 904x2316 screen.
+2. **`find_element.py "<question>"`** — Automated: takes a timestamped screenshot under `screenshots/YYYY-mm-dd/` generates the grid alongside it, sends it to the vision model, and returns the cell + pixel coordinates.
+3. **`cell2coords.py <cell>`** — Converts a cell reference e.g. `D12` to center pixel `(x, y)` on the original 904x2316 screen.
 4. **`phone_status.py [optional prompt]`** — Takes a timestamped screenshot under `screenshots/YYYY-mm-dd/` (no grid) and sends it to the vision model for a detailed description of the current screen state. Use this for verifying what's on screen before/after actions. Supports an optional extra prompt for specific questions.
 
 All screenshots are saved to `screenshots/YYYY-mm-dd/screen-YYYY-mm-dd-HH-mm-ss-msc.png` (millisecond suffix) so each capture is preserved — nothing overwrites the previous shot.
@@ -83,11 +83,11 @@ When using `phone_status.py` for verification, follow these guidelines:
 
 ## Verify-Act-Verify Workflow
 
-The rule that all ADB automation follows this loop, and the Key Rules of the loop, are in AGENTS.md.
+The rule that all ADB automation follows this loop, and the Key Rules of the loop, are in AGENTS.md
 
 ### The Loop
 
-1. **Pre-Action Check**: Before any tap/swipe, check the current screen to confirm you're on the correct page and no overlays are blocking the UI.
+1. **Pre-Action Check**: Before any tap/swipe check the current screen to confirm you're on the correct page and no overlays are blocking the UI.
    ```bash
    python3 phone_status.py  # or with a specific question
    ```
@@ -159,12 +159,12 @@ adb shell am force-stop asuk.com.android.app
 - **Never type multi-word text without `%s`** — this is the #1 cause of corrupted text input.
 
 ### Swipe — Drag vs Fling
-- **Fast swipe** (default ~350ms) = **fling** (momentum scroll). Needs room to build up speed. Near scroll boundaries, the fling may not register.
-- **Slow swipe** (1000ms+) = **drag** (1:1 finger-follow). Use for small, precise scroll adjustments.
-- **Rule**: When near the top/bottom of a scrollable area, always use slow swipe (`1000` duration).
+- **Fast swipe** default ~350ms = **fling** (momentum scroll). Needs room to build up speed. Near scroll boundaries, the fling may not register.
+- **Slow swipe** 1000ms+ = **drag** 1:1 finger-follow. Use for small, precise scroll adjustments.
+- **Rule**: When near the top/bottom of a scrollable area, always use slow swipe `1000` duration.
 
 ### Dismissing the Keyboard — Don't Tap Randomly
-- **Never tap at `(100, 200)` to dismiss the keyboard** — that's the **back button** area (`[0,87][126,213]`), which navigates away from the current page.
+- **Never tap at `(100, 200)` to dismiss the keyboard** — that's the **back button** area `[0,87][126,213]` which navigates away from the current page.
 - **Use `adb shell input keyevent 4` (Back)** to dismiss the keyboard — it closes the keyboard without leaving the page (unless the field was the only focus target).
 - **Verify text input WITHOUT tapping** — after typing, use `uiautomator dump` directly to check the field value. Don't tap "outside" first.
 

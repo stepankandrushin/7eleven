@@ -1,13 +1,13 @@
-# Task: Order Evian Water via 7-Eleven App (Android/ADB)
+# Task: Order Evian Water via 7-Eleven App Android/ADB
 
 ## Goal
-Order 3 cases (36 bottles) of Evian water through the **7-Eleven TH mobile app** on a Samsung Android phone connected via ADB, delivered to home address with **cash on delivery (เก็บเงินปลายทาง)**.
+Order 3 cases 36 bottles of Evian water through the **7-Eleven TH mobile app** on a Samsung Android phone connected via ADB, delivered to home address with **cash on delivery (เก็บเงินปลายทาง)**.
 
-Prefer Evian 1L if available. Fallback: Evian 750ml Sport Cap, case of 12 (product code 420672010, ~895 THB/case).
+Prefer Evian 1L if available. Fallback: Evian 750ml Sport Cap, case of 12 product code 420672010 ~895 THB/case
 
 ## Before You Start
 
-1. **Read AGENTS.md**, then docs/adb_automation.md and docs/app_ordering.md — they have all ADB automation instructions, UI Automator usage, popup handling, etc.
+1. **Read AGENTS.md** then docs/adb_automation.md and docs/app_ordering.md — they have all ADB automation instructions, UI Automator usage, popup handling, etc.
 2. **Check ADB connection**: `adb devices` (must show "device", not "unauthorized")
 3. **Get screen resolution**: `adb shell wm size && adb shell wm density`
 
@@ -20,7 +20,7 @@ Prefer Evian 1L if available. Fallback: Evian 750ml Sport Cap, case of 12 (produ
 ## Critical Rules
 
 1. **NEVER guess tap coordinates from screenshots.** Always use UI Automator dump to get exact bounds, then tap center. See AGENTS.md and docs/adb_automation.md for details.
-2. **Campaign popups appear frequently** — detect with `wc -c` on UI dump (~2845 bytes = popup). Dismiss with `adb shell input keyevent 4` (back button).
+2. **Campaign popups appear frequently** — detect with `wc -c` on UI dump ~2845 bytes = popup. Dismiss with `adb shell input keyevent 4` (back button).
 3. **Always verify state** after each action: dump UI or take screenshot.
 
 ## Account
@@ -63,10 +63,10 @@ GPS: `<latitude>, <longitude>`
 ## Known Issues & Learnings
 
 - ~~Searching "evian" in 7 Delivery returned **no results**~~ **RESOLVED**: Typing "evian" shows autocomplete suggestions including "เอเวียง". Tap the suggestion (not Enter) to search. Evian IS available in 7 Delivery.
-- **Evian products available in 7 Delivery** (as of 2026-04): Evian 1L (~65 Baht), Evian 500ml (~48 Baht), Evian 500ml case (1,080 Baht, Coming Soon), Evian Sparkling 330ml 4-pack (210 Baht, Coming Soon)
+- **Evian products available in 7 Delivery** as of 2026-04 - Evian 1L ~65 Baht, Evian 500ml ~48 Baht, Evian 500ml case 1,080 Baht, Coming Soon, Evian Sparkling 330ml 4-pack 210 Baht, Coming Soon
 - **Stock limit**: Evian 1L had max 19 units available (store inventory based). The +/- quantity selector silently caps at available stock.
 - The app shows campaign popups constantly — on launch, when entering sections, after dismissing one another may appear. Always check UI dump size before interacting.
-- The 7 Delivery activity (`SevenNowLandingActivity`) cannot be launched directly via `am start` (not exported). Must navigate through the app home.
+- The 7 Delivery activity `SevenNowLandingActivity` cannot be launched directly via `am start` (not exported). Must navigate through the app home.
 - First time entering 7 Delivery triggers a **location permission** dialog — grant "While using the app" with precise location.
 - If COD is not available in ALL ONLINE, go back to 7 Delivery and try browsing categories instead of search.
 

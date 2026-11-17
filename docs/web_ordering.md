@@ -31,28 +31,28 @@ ln -sf "$HOME/Library/Application Support/Google/Chrome/Local State" "/tmp/chrom
 sleep 5 && curl -s http://localhost:9222/json/version
 ```
 
-Expected output includes `"Browser": "Chrome/..."` and a `webSocketDebuggerUrl`.
+Expected output includes `"Browser": "Chrome/..."` and a `webSocketDebuggerUrl`
 
 ### Other profiles
 
-Replace `"Default"` with the profile directory name (e.g. `"Profile 1"`, `"Profile 2"`). Check `~/Library/Application Support/Google/Chrome/Local State` for the mapping of profile directories to names.
+Replace `"Default"` with the profile directory name e.g. `"Profile 1"` `"Profile 2"` Check `~/Library/Application Support/Google/Chrome/Local State` for the mapping of profile directories to names.
 
 ---
 
 ## Navigating the DOM via Chrome DevTools Protocol (CDP)
 
-Once Chrome is running with `--remote-debugging-port=9222`, you can control it programmatically.
+Once Chrome is running with `--remote-debugging-port=9222` you can control it programmatically.
 
 ### Key concepts
 
-- **HTTP API** at `http://localhost:9222`:
+- **HTTP API** at `http://localhost:9222`
   - `/json/version` — browser info and browser-level WebSocket URL
   - `/json/list` — list of all open tabs with their WebSocket URLs
   - `/json/new?url=...` — open a new tab
 
 - **WebSocket API** (CDP): connect to a tab's `webSocketDebuggerUrl` to send commands.
 
-### Common workflow (Python with `websockets`)
+### Common workflow Python with `websockets`
 
 ```python
 import json, asyncio, websockets, urllib.request
@@ -122,18 +122,18 @@ await send_cmd("Target.createTarget", {"url": "https://example.com"})
 | `Page.navigate` | Navigate to a URL |
 | `DOM.getDocument` | Get the DOM tree root |
 | `DOM.querySelectorAll` | Find elements by CSS selector |
-| `Page.captureScreenshot` | Take a screenshot (base64 PNG) |
+| `Page.captureScreenshot` | Take a screenshot base64 PNG |
 | `Network.enable` | Start capturing network requests |
 | `Input.dispatchMouseEvent` | Simulate clicks |
 | `Input.dispatchKeyEvent` | Simulate keyboard input |
 
 ### Tips for finding data in web pages
 
-1. **Start with `Runtime.evaluate`** — it's the easiest way. Write a JS function that uses `document.querySelectorAll()` to find elements, extract `.textContent`, attributes, etc., and return `JSON.stringify(result)`.
+1. **Start with `Runtime.evaluate`** — it's the easiest way. Write a JS function that uses `document.querySelectorAll()` to find elements, extract `.textContent` attributes, etc., and return `JSON.stringify(result)`
 
-2. **Search by text content**: use selectors like `[aria-label*="keyword"]`, `[title*="keyword"]`, or iterate elements and filter by `.textContent.includes("keyword")`.
+2. **Search by text content**: use selectors like `[aria-label*="keyword"]` `[title*="keyword"]` or iterate elements and filter by `.textContent.includes("keyword")`
 
-3. **Search by structure**: inspect class names (e.g. `[class*="RoomTile"]`), roles (`[role="listitem"]`), or data attributes (`[data-testid="..."]`).
+3. **Search by structure**: inspect class names e.g. `[class*="RoomTile"]` roles `[role="listitem"]` or data attributes `[data-testid="..."]`
 
 4. **Access app-level JS APIs**: many SPAs expose their data model on `window` (e.g. Element/Matrix exposes `window.mxMatrixClientPeg.get()` which gives access to all rooms, messages, members without parsing DOM).
 
@@ -151,7 +151,7 @@ uv pip install websockets  # Already installed
 
 ## Email (IMAP)
 
-The user's email is `your@email.com`, accessed via IMAP (not Gmail). Credentials and connection details are in `.env` (see `.env.sample` for the format).
+The user's email is `your@email.com` accessed via IMAP (not Gmail). Credentials and connection details are in `.env` (see `.env.sample` for the format).
 
 ### Usage
 
@@ -174,7 +174,7 @@ The 7-Eleven ALL Online site uses **email OTP authentication** (not password). T
 2. This redirects to `https://allmember-web-ext.cpall.co.th/weblogin/login/email-otp`
 3. An OTP is sent to `your@email.com` automatically
 4. The page shows 6 individual `<input type="text">` fields for the OTP digits
-5. Retrieve the OTP from email (sender: `noreply@7eleven.co.th`, subject contains "แจ้งรหัสเพื่อยืนยัน")
+5. Retrieve the OTP from email (sender: `noreply@7eleven.co.th` subject contains "แจ้งรหัสเพื่อยืนยัน")
 6. Enter OTP digits into the 6 fields using native value setter + input/change events:
 
 ```javascript
@@ -200,9 +200,9 @@ if (skipBtn) skipBtn.click();
 
 ### Key Notes for Login
 
-- The `/json/new?url=...` HTTP API returns 405 — **do NOT use it** to open new tabs. Instead, use an existing tab and `Page.navigate()`.
-- The site uses **jQuery** — use `jQuery('#selector').val(value).trigger('change')` for dropdowns (province/district/sub-district cascade).
-- Native `dispatchEvent(new Event('change'))` does NOT trigger the district/sub-district cascade. You must use jQuery `.trigger('change')`.
+- The `/json/new?url=...` HTTP API returns 405 — **do NOT use it** to open new tabs. Instead, use an existing tab and `Page.navigate()`
+- The site uses **jQuery** — use `jQuery('#selector').val(value).trigger('change')` for dropdowns province/district/sub-district cascade.
+- Native `dispatchEvent(new Event('change'))` does NOT trigger the district/sub-district cascade. You must use jQuery `.trigger('change')`
 - OTP ref code shown on page (e.g. "REF. WENYMI") matches the ref in the email for verification.
 - OTP expires in 5 minutes.
 
@@ -218,7 +218,7 @@ if (skipBtn) skipBtn.click();
 | Cart/basket | `/account/basket/` |
 | Wishlist | `/account/wishlist/` |
 
-### Address Form (at `/account/settings/`)
+### Address Form at `/account/settings/`
 
 The address form uses cascading dropdowns. Fields and IDs:
 
@@ -240,12 +240,12 @@ The address form uses cascading dropdowns. Fields and IDs:
 
 **Success alert**: "การตั้งค่าของคุณเปลี่ยนแปลงสำเร็จ"
 
-### Favorite Store Page (`/account/favoritestore/`)
+### Favorite Store Page `/account/favoritestore/`
 
 - Store number input: `#js-storefinderInput` (type: number)
 - Verify button: `#js-storefinderButton` (text: "ยืนยันรหัสร้าน")
 - After verify, a confirm popup appears with "ยกเลิก" (Cancel) and "ยืนยัน" (Confirm) — click `.btn-confirm.btn-green` to save.
-- On success, redirects to `/account/addresses/`.
+- On success, redirects to `/account/addresses/`
 - Error "สาขาที่ท่านเลือกไม่เข้าร่วมรายการ" means the store is not eligible for the delivery program.
 - Error "ปัญหาทางเทคนิค" (technical problem) — retry; may be transient.
 
@@ -261,7 +261,7 @@ fetch('https://web-api-ro.7eleven.co.th/v1/Store/GetStoreByCurrentLocation', {
 }).then(r => r.json())
 ```
 
-**Important**: The payload must use `latitude`/`longitude` (not `lat`/`lng`) — the short form returns empty results.
+**Important**: The payload must use `latitude`/`longitude` not `lat`/`lng` — the short form returns empty results.
 
 **Important**: Must call this API from the `7eleven.co.th` domain (navigate to `https://www.7eleven.co.th/find-store` first). Calling from `allonline.7eleven.co.th` returns 0 results.
 
@@ -282,15 +282,15 @@ Based on the home GPS coordinates:
 
 ### Checkout Flow
 
-#### Step 1: Cart (`/account/basket/`)
+#### Step 1 - Cart `/account/basket/`
 
 - Items listed with "ลบ" (Delete) links — be careful, the confirmation popup may target the wrong item (first in DOM, not the one clicked). Verify cart after removing.
 - "ดำเนินการชำระเงิน" button to proceed.
 - Product search: `/search/?q=evian`
-- Product page: set quantity via `input[type="number"].form-control.text-center`, then click `.btn-addtocart`
+- Product page: set quantity via `input[type="number"].form-control.text-center` then click `.btn-addtocart`
 - Max 5 cases per product per day per member.
 
-#### Step 2: Shipping (`/checkout/shipping/`)
+#### Step 2 - Shipping `/checkout/shipping/`
 
 **Delivery method tabs** — these are **Bootstrap tabs**, NOT radio buttons:
 
@@ -302,35 +302,35 @@ jQuery('a.tab-store[href="#store"]').tab('show');
 jQuery('a.tab-address[href="#address"]').tab('show');
 ```
 
-**Store pickup tab (`#store`):**
+**Store pickup tab `#store`**
 - Free shipping
-- Select store via radio: `#s-recent-{storeCode}` (e.g. `#s-recent-01234`)
+- Select store via radio: `#s-recent-{storeCode}` e.g. `#s-recent-01234`
 - Phone field: `#second-phone-shipping` (pre-filled with the account phone)
 
-**Home delivery tab (`#address`):**
+**Home delivery tab `#address`**
 - Same address form as account settings (same field IDs)
-- **MUST set GPS coordinates** — without them, shipping cost is extremely high (฿700-1100+)
+- **MUST set GPS coordinates** — without them, shipping cost is extremely high ฿700-1100+
 - GPS fields (hidden inputs, set via JS):
   - `#new-address-mapLocation-latitude` → `<latitude>`
   - `#new-address-mapLocation-longitude` → `<longitude>`
   - `#new-address-mapLocation-zipCode` → `<postcode>`
-  - Also set `#userAddressBook0mapLocationLatitude`, `#userAddressBook0mapLocationLongitude`, `#userAddressBook0mapLocationZipCode`
+  - Also set `#userAddressBook0mapLocationLatitude` `#userAddressBook0mapLocationLongitude` `#userAddressBook0mapLocationZipCode`
 - "กรุณาระบุตำแหน่ง" warning means GPS not set — shipping will be wrong
 - Submit: `.btn-submit-shipping`
 
-#### Step 3: Payment (`/checkout/payment/`)
+#### Step 3 - Payment `/checkout/payment/`
 
 **Available payment methods (website only):**
 1. Credit/Debit card
 2. TrueMoney Wallet
-3. **ชำระเงินสด ที่ร้านเซเว่นอีเลฟเว่น (7-11)** — pay cash via barcode at any branch
+3. **ชำระเงินสด ที่ร้านเซเว่นอีเลฟเว่น 7-11** — pay cash via barcode at any branch
 4. QR Payment
 
 **NO cash on delivery (ชำระเงินปลายทาง)** — COD is only available in the 7-Eleven mobile app, not the website.
 
 For store pickup, option 3 is effectively COD: pick up at store, show barcode, pay cash.
 
-Select payment: click `button.payment-option-trigger.COUNTERSERVICE_CASH-tab` for cash at 7-11.
+Select payment: click `button.payment-option-trigger.COUNTERSERVICE_CASH-tab` for cash at 7-11
 
 Submit order: click "สั่งซื้อ" button.
 
